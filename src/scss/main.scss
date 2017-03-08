@@ -1,0 +1,45 @@
+$grid-columns: 12;
+$grid-gutter: 24px;
+$grid-container-gutter: 12px;
+$responsive-breakpoints: (
+	xs: (cutoff: 320px, containerWidth: 100%), 
+	sm: (cutoff: 544px, containerWidth: 100%), 
+	md: (cutoff: 768px, containerWidth: 100%), 
+	lg: (cutoff: 992px, containerWidth: 100%), 
+	xl: (cutoff: 1300px, containerWidth: 1284px)
+) !default;
+
+$font-logo: "GothamProNarrowBold";
+$font-thin: "Roboto-Thin";
+$font-light: "Roboto-Light";
+$font-reg: "Roboto-Regular";
+$font-med: "Roboto-Medium";
+$font-bold: "Roboto-Bold";
+
+$font1-light: "MuseoSansLight";
+$font1-reg: "MuseoSansRegular";
+$font1-med: "MuseoSansMedium";
+$font1-bold: "MuseoSansBold";
+
+$black: #111;
+$black2: #212121;
+$black3: #333333;
+$gray: #666666;
+$blue: #40a0d4;
+
+@import "base/reset";
+@import "base/helpers";
+@import "base/responsive";
+@import "base/grid";
+
+@import "vendor/fontawesome/font-awesome";
+
+@import "components/layout";
+@import "components/fonts";
+@import "components/typography";
+@import "components/common";
+@import "components/header";
+@import "components/navigation";
+@import "components/page";
+@import "components/modal";
+@import "components/footer";

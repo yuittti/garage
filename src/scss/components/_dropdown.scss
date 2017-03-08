@@ -1,0 +1,73 @@
+.dropDown {
+    @extend .flex;
+    position: relative;
+
+
+	&-link {
+		padding: 11px 35px 10px 11px;
+		background: #101319;
+        position: relative;
+        transition: 0.2s linear color;
+
+        &:hover {
+          color: #4db3f1;
+        }
+
+        &:after {
+          content: '';
+          display: block;
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          width: 4px;
+          height: 4px;
+          background: url(../images/caret.png) center center no-repeat;
+		}
+	}
+
+	&-content {
+		display: block;
+	    max-height: 0;
+	    position: absolute;
+        left: 0;
+        top: 40px;
+	    z-index: 100;
+	    overflow: hidden;
+	    opacity: 0;
+	    transition: opacity .3s ease-in;
+        min-width: 100%;
+        background: #101319;
+        border-top: 1px solid #2a292e;
+        padding: 10px 0;
+
+        @include hmedia(850) {
+        	top: auto;
+        	bottom: 40px;
+        	border-top: none;
+        	border-bottom: 1px solid #2a292e;
+        }
+
+	}
+
+	&.-open {
+		.dropDown-content {
+			max-height: 150px;
+			opacity: 1;
+            overflow-y: auto;
+		}
+
+        .dropDown-link {
+          color: #4db3f1;
+        }
+	}
+
+    &-item {
+      display: block;
+      padding: 8px;
+      font-size: 13px;
+      &:hover {
+        color: #4db3f1;
+        transition: 0.2s linear;
+      }
+    }
+}

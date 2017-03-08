@@ -1,0 +1,185 @@
+$grid-columns: 12 !default;
+$grid-gutter: 20px !default;
+
+// Генерирует сетку в заданном направлении
+// используя grid-подобный синтаксис
+@mixin grid-template($_dir, $_params) {
+  $_lngs: ();
+
+  // Формируем массив сумм величин по их измерениям
+  // px: 250px, em: 100em, fr: 3fr
+  @each $_param in $_params {
+    @if not unitless($_param) {
+      $_unit: unit($_param);
+      $_newVal: null;
+
+      @if map-has-key($_lngs, $_unit) {
+        $_newVal: map-get($_lngs, $_unit) + $_param;
+      }
+      @else {
+        $_newVal: $_param;
+      }
+
+      $_newMap: ($_unit: $_newVal);
+      $_lngs: map-merge($_lngs, $_newMap);
+    }
+  }
+
+  // Итоговая строка для calc, в виде 100% - 150px - 15em
+  $_calcString: "100%";
+
+  // Сумма для fr размерности
+  $_calcSum: 0;
+
+  @each $_unit, $_lng in $_lngs {
+    @if $_unit == fr {
+      $_calcSum: $_calcSum + stripUnits($_lng);
+    }
+    @else {
+      $_calcString: $_calcString + " - #{$_lng}";
+    }
+  }
+
+  display: flex;
+
+  @if $_dir == row {
+    flex-direction: row;
+  }
+  @else {
+    flex-direction: column;
+  }
+
+  $_i: 1;
+
+  @each $_param in $_params {
+    & > *:nth-child(#{$_i}) {
+      @if unitless($_param) {
+        flex-grow: $_param;
+
+        @if $_param > 0 {
+          flex-shrink: 1;
+        }
+        @else {
+          flex-shrink: 0;
+        }
+      }
+      @else {
+        @if unit($_param) == fr {
+          flex-grow: 0;
+          flex-shrink: 0;
+
+          @if $_dir == row {
+            width: calc((#{$_calcString}) * #{stripUnits($_param) / $_calcSum});
+          }
+          @else {
+            height: calc((#{$_calcString}) * #{stripUnits($_param) / $_calcSum});
+          }
+        }
+        @else {
+          flex-grow: 0;
+          flex-shrink: 0;
+
+          @if $_dir == row {
+            width: $_param;
+          }
+          @else {
+            height: $_param;
+          }
+        }
+      }
+    }
+
+    $_i: $_i + 1;
+  }
+}
+
+@mixin grid-template-columns($params...) {
+  @include grid-template(row, $params);
+}
+
+@mixin grid-template-rows($params...) {
+  @include grid-template(col, $params);
+}
+
+@mixin grid-col($_gutter: $grid-gutter) {
+  box-sizing: border-box;
+  padding: 0 ($_gutter / 2);
+  // flex-shrink: 1;
+  // flex-grow: 1;
+  min-width: 0;
+}
+
+@mixin grid-row($_gutter: $grid-gutter) {
+  margin-left: -$_gutter / 2;
+  margin-right: -$_gutter / 2;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.grid {
+  &-container {
+    box-sizing: border-box;
+    padding: 0 $grid-container-gutter;
+    margin: 0 auto;
+
+    &._fluid {
+      width: 100%;
+    }
+  }
+
+  &-row {
+    @include grid-row;
+  }
+
+  &-col {
+    @include grid-col;
+  }
+
+  // Генерируем колонки с параметрами
+  // по умолчанию для меньшего брейкпойнта
+  @each $_key, $_params in $responsive-breakpoints {
+    $_cutoff: map_get($_params, "cutoff");
+
+    @for $j from 1 through $grid-columns {
+      &-col-#{$_key}-#{$j} {
+        @include grid-col;
+
+        width: 100%;
+      }
+
+      &-col-offset-#{$_key}-#{$j} {
+        margin-left: 0;
+      }
+    }
+  }
+
+  // Генерируем стили
+  // для остальных брейкпойтнов
+  @each $_key, $_params in $responsive-breakpoints {
+    $_cutoff: map_get($_params, "cutoff");
+    $_containerWidth: map_get($_params, "containerWidth");
+
+    @media all and (min-width: $_cutoff) {
+      &-container {
+        @if $_containerWidth {
+          width: $_containerWidth;
+        }
+        @else {
+          width: $_cutoff;
+        }
+      }
+
+      @for $j from 1 through $grid-columns {
+        &-col-#{$_key}-#{$j} {
+          width: percentage($j / $grid-columns);
+        }
+
+        &-col-offset-#{$_key}-#{$j} {
+          margin-left: percentage($j / $grid-columns);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,108 @@
+$responsive-breakpoints: (xs: (cutoff: 0, containerWidth: 100%), sm: (cutoff: 544px), md: (cutoff: 768px), lg: (cutoff: 992px), xl: (cutoff: 1200px)) !default;
+
+// Возвращает параметр отсечки по имени отсечки и имени параметра
+@function getBreakpointVal($_name, $_key) {
+  @return map_get(map_get($responsive-breakpoints, $_name), $_key);
+}
+
+// Возвращает следующее имя отсейчки или null если такой нет
+// TODO потенциальная проблема если отсечки не по порядку
+@function getNextBreakpointName($_name) {
+  $_keys: map_keys($responsive-breakpoints);
+  $_index: index($_keys, $_name);
+
+  @if $_index + 1 <= length($_keys) {
+    @return nth($_keys, $_index + 1);
+  }
+  @else {
+    @return null;
+  }
+}
+
+// Возвращает мапу следующей отсейчки или null если такой нет
+@function getNextBreakpoint($_name) {
+  $_nextName: getNextBreakpointName($_name);
+
+  @if $_nextName {
+    @return map-get($responsive-breakpoints, $_nextName);
+  }
+  @else {
+    @return null;
+  }
+}
+
+// Генерирует адаптивные вспомогательные свойства
+// для переданного брейкпойнта в заданном направлении (up\down)
+@mixin responsive-params($_key, $_dir) {
+  .__hidden-#{$_key}-#{$_dir} {
+    display: none !important;
+  }
+
+  .__textCenter-#{$_key}-#{$_dir} {
+    text-align: center !important;
+  }
+
+  .__textRight-#{$_key}-#{$_dir} {
+    text-align: right !important;
+  }
+
+  .__textLeft-#{$_key}-#{$_dir} {
+    text-align: left !important;
+  }
+
+  .__flexWrap-#{$_key}-#{$_dir} {
+    flex-wrap: wrap !important;
+  }
+
+  .__flexNoWrap-#{$_key}-#{$_dir} {
+    flex-wrap: nowrap !important;
+  }
+}
+
+// Проходим по брейкпойнтам, проставляя minWidth и maxWidth для удобства
+$_responsive-breakpoints: ();
+
+@each $_key, $_params in $responsive-breakpoints {
+  $_cutoff: map_get($_params, "cutoff");
+  $_nextBreakpoint: getNextBreakpoint($_key);
+
+  @if $_nextBreakpoint {
+    $_params: map_merge($_params, (minWidth: $_cutoff, maxWidth: map_get($_nextBreakpoint, "cutoff") - 1px));
+  }
+  @else {
+    $_params: map_merge($_params, (minWidth: $_cutoff));
+  }
+
+  $_responsive-breakpoints: map-merge($_responsive-breakpoints, ($_key: $_params));
+}
+
+// Сохраняем новую мапу брейкпойнтов
+$responsive-breakpoints: $_responsive-breakpoints;
+
+// Генерируем вспомогательные классы
+@each $_key, $_params in $responsive-breakpoints {
+  $_min: map_get($_params, "minWidth");
+  $_max: map_get($_params, "maxWidth");
+
+  @media all and (min-width: $_min) {
+    @include responsive-params($_key, up);
+  }
+
+  @if $_max {
+    @media all and (max-width: $_max) {
+      @include responsive-params($_key, down);
+    }
+  }
+  @else {
+    @include responsive-params($_key, down);
+  }
+}
+
+@mixin media($size) {
+  @media all and (max-width: $size + px) { @content; }
+}
+
+@mixin hmedia($size) {
+  @media all and (max-height: $size + px) { @content; }
+}
+
